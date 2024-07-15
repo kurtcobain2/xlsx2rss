@@ -82,7 +82,6 @@ jobs:
           OUTPUT_PATH: "/tmp/${{ env.TEMP_FOLDER_DATA }}"
           OUTPUT_PRENAME: "${{ env.FILE_NAME }}"
         run: |
-          echo run python with file: ${{ env.FILE_NAME }}
           python make_data.py
           
       - name: Upload artifact
@@ -97,6 +96,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.1.1
+        with:
+          python-version: '3.8'
+          cache: 'pip'
+
+      - name: Install Python Dependancies
+        run: pip install -r requirements.txt
+        
       - name: Create approval markdown
         env:
           UPLOAD_FILE_NAME: ${{ fromJson(needs.set-up.outputs.commit-files)[0].name }}
