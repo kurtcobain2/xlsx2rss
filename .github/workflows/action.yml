@@ -154,17 +154,18 @@ jobs:
 
       - name: Alert ISSUE
         run: |
-          echo "----------------------------------------------------------"
-          echo "|                                                        |"
-          echo "| 이슈 생성: ${{ steps.create-issue.outputs.issue-url }}  |"
-          echo "|                                                        |"
-          echo "----------------------------------------------------------"
+          echo "------------------------------------------------------------------------"
+          echo "|"
+          echo "| 이슈 생성: ${{ steps.create-issue.outputs.issue-url }}"
+          echo "|"
+          echo "------------------------------------------------------------------------"
           echo -e "\n\nWaiting..."
 
       - name: Wait for issue closed
         id: wait-issue
         uses: ./.github/actions/wait-for-issue
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ steps.create-issue.outputs.issue-number }}
           interval-wait-time: 2000
           max-try: 60
