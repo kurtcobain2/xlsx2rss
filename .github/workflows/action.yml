@@ -64,6 +64,7 @@ jobs:
         uses: actions/setup-python@v5.1.1
         with:
           python-version: '3.8'
+          cache: 'pip'
 
       - name: Install Python Dependancies
         run: pip install -r requirements.txt
@@ -73,7 +74,7 @@ jobs:
           PASS_KEY: ${{ secrets.PASS_KEY }}
           FILE_NAME: ${{ needs.set-up.outputs.commit-files[0].name }}
           OUTPUT_PATH: /tmp/xlsx2rss-data
-          OUTPUT_PRE: ${{ env.FILE_NAME }}
+          OUTPUT_PRENAME: ${{ env.FILE_NAME }}
         run: python make_data.py
           
       - name: Upload artifact
