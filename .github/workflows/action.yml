@@ -48,6 +48,12 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           file-name: '*.xlsx'
 
+      - name: Test..
+        run: |
+          echo ${{ steps.commit-file.outputs.files }}
+          echo ----------------------------------------------
+          echo ${{ steps.commit-file.outputs.files[0].name }}
+
   
   make-data-file:
     needs: set-up
