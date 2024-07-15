@@ -73,13 +73,13 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Make temp folder
-        run: mkdir /tmp/$TEMP_FOLDER_DATA
+        run: mkdir /tmp/${{ env.TEMP_FOLDER_DATA }}
 
       - name: Run make_data code
         env:
           PASS_KEY: "${{ secrets.PASS_KEY }}"
           FILE_NAME: "${{ fromJson(needs.set-up.outputs.commit-files)[0].name }}"
-          OUTPUT_PATH: "/tmp/$TEMP_FOLDER_DATA"
+          OUTPUT_PATH: "/tmp/${{ env.TEMP_FOLDER_DATA }}"
           OUTPUT_PRENAME: "${{ env.FILE_NAME }}"
         run: |
           echo run python with file: ${{ env.FILE_NAME }}
