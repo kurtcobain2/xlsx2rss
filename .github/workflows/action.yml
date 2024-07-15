@@ -75,7 +75,9 @@ jobs:
           FILE_NAME: ${{ needs.set-up.outputs.commit-files[0].name }}
           OUTPUT_PATH: /tmp/xlsx2rss-data
           OUTPUT_PRENAME: ${{ env.FILE_NAME }}
-        run: python make_data.py
+        run: |
+          echo run python with file: ${{ env.FILE_NAME }}
+          python make_data.py
           
       - name: Upload artifact
         id: artifact
