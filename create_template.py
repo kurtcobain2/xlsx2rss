@@ -6,8 +6,9 @@ import json
 load_dotenv()
 
 ENV_KEYS = [
-    'UPLOAD_FILE_NAME', 'UPLOAD_FILE_URL'
-    'RESULT_COUNT', 'ARTIFACT_URL'
+    'FILE_ORIGIN_NAME', 'UPLOAD_FILE_NAME', 'UPLOAD_FILE_URL',
+    'RESULT_COUNT', 'ARTIFACT_URL',
+    'FAILED_COUNT', 'ERR_CONTENT'
 ]
 
 def replaceAllWithEnv():
@@ -15,7 +16,7 @@ def replaceAllWithEnv():
         content = f.read()
         
         for key in ENV_KEYS:
-            if (key in os.environ):
+            if key in os.environ:
                 content = content.replace(f'$#({key})', os.environ[key])
 
     return content
@@ -27,8 +28,14 @@ def run():
     with open(os.path.join(os.environ['TEMP_FOLDER_DATA'], f'''{os.environ['UPLOAD_FILE_NAME']}_naver_rss_failed.json'''), 'r', encoding='utf-8') as f:
         fail_json = json.load(f)
 
-    os.environ['RESULT_COUNT'] = len(rss_items)
-    os.environ['FAILED_COUNT'] = fail_json['cnt']
+    os.environ['RESULT_COUNT'] = f'{len(rss_items)}'
+    os.environ['FAILED_COUNT'] = f'''{fail_json['cnt']}'''
+    
+    err_conts = []
+    for err in fail_json['detail']:
+        err_conts.append(f'''- 줄 번호: {err['row_idx']}\n- 오류 내용: {err['cause']}\n\n''')
+    os.environ['ERR_CONTENT'] = '\n'.join(err_conts)
+
 
     # env 모두 대체
     content = replaceAllWithEnv()
