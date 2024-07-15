@@ -26,7 +26,7 @@ async function run() {
                 issue_number: ISSUE_NUM
             })
 
-            const userComment = comments.find((v) => v.user.type === "User");
+            const userComment = comments.data.find((v) => v.user.type === "User");
             if (userComment) {
                 success = true;
                 core.setOutput('comment-body', userComment.body);
