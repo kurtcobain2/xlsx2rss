@@ -1,0 +1,101 @@
+name: Excel Upload Workflow
+
+on:
+  push:
+    branches:
+      - manager
+    paths:
+      - 'files/*.xlsx'
+
+permissions: 
+  issues: write
+  contents: read
+
+jobs:
+  set-up:
+    runs-on: ubuntu-latest
+    
+    outputs:
+      commit-files: ${{ steps.commit-file.outputs.files }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.1.1
+        with:
+          python-version: '3.8'
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4.0.3
+        with:
+          node-version: 16
+
+      - name: Cache node modules
+        uses: actions/cache@v4.0.2
+        id: cache
+        with:
+          path: node_modules
+          key: npm-packages-${{ hashFiles('.github/actions/package-lock.json') }}
+
+      - name: Install Node Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          cat .github/actions/package.json > package.json
+          cat .github/actions/package-lock.json > package-lock.json
+          npm ci
+
+      - name: Get Commit File
+        id: commit-file
+        uses: ./.github/actions/get-commit-file
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          file-name: '*.xlsx'
+
+  
+  make-data-file:
+    needs: set-up
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-id: ${{ steps.artifact.outputs.artifact-id }}
+      artifact-url: ${{ steps.artifact.outputs.artifact-url }}
+
+    steps:
+      - name: Run make_data code
+        env:
+          PASS_KEY: ${{ secrets.PASS_KEY }}
+          FILE_NAME: ${{ needs.set-up.outputs.commit-files }}
+          OUTPUT_PATH: /tmp/xlsx2rss-data
+          OUTPUT_PRE: ${{ env.FILE_NAME }}
+        run: python make_data.py
+          
+      - name: Upload artifact
+        id: artifact
+        uses: actions/upload-artifact@v4.3.4
+        with:
+          name: xlsx2rss-data
+          path: /tmp/xlsx2rss-data
+      
+  create-issue:
+    needs: [set-up, make-data-file]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create approval markdown
+        env:
+          UPLOAD_FILE_NAME: ${{ needs.set-up.outputs.commit-files[0].name }}
+          UPLOAD_FILE_URL: ${{ needs.set-up.outputs.commit-files[0].url.blob }}
+          ARTIFACT_URL: ${{ needs.make-data-file.outputs.artifact-url }}
+        run: |
+          python create_template.py
+
+      - name: Create approval issue
+        id: create_issue
+        uses: ./.github/actions/create-issue
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-title: "[Github Action] 파일 승인 요청"
+          issue-body-url: ./templates/request_approve.md
+
+  
