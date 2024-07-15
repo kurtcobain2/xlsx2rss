@@ -24,7 +24,7 @@ async function run() {
                 owner: github.context.repo.owner,
                 repo: github.context.repo.repo,
                 issue_number: ISSUE_NUM
-            });
+            })
 
             const userComment = comments.find((v) => v.user.type === "User");
             if (userComment) {
@@ -32,8 +32,8 @@ async function run() {
                 core.setOutput('comment-body', userComment.body);
                 break;
             }
-
-            await wait(INTERVAL_WAIT_TIME)
+            
+            await wait(INTERVAL_WAIT_TIME);
         }
 
         if (!success) {

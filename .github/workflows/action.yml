@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 env:
-  TEMP_FOLDER_DATA: xlsx2rss-data
+  TEMP_FOLDER_DATA: /tmp/xlsx2rss-data
 
 jobs:
   set-up:
@@ -73,27 +73,28 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Make temp folder
-        run: mkdir /tmp/${{ env.TEMP_FOLDER_DATA }}
+        run: mkdir ${{ env.TEMP_FOLDER_DATA }}
 
       - name: Run make_data code
         env:
           PASS_KEY: "${{ secrets.PASS_KEY }}"
           FILE_NAME: "${{ fromJson(needs.set-up.outputs.commit-files)[0].name }}"
-          OUTPUT_PATH: "/tmp/${{ env.TEMP_FOLDER_DATA }}"
+          TEMP_FOLDER_DATA: "${{ env.TEMP_FOLDER_DATA }}"
           OUTPUT_PRENAME: "${{ env.FILE_NAME }}"
         run: |
           python make_data.py
           
       - name: Upload artifact
-        id: artifact
         uses: actions/upload-artifact@v4.3.4
         with:
           name: xlsx2rss-data
-          path: /tmp/$TEMP_FOLDER_DATA
+          path: ${{ env.TEMP_FOLDER_DATA }}
       
   create-issue:
     needs: [set-up, make-data-file]
     runs-on: ubuntu-latest
+    outputs:
+      issue-comment-body: ${{ steps.wait-issue.outputs.comment-body }}
 
     steps:
       - name: Checkout
@@ -127,20 +128,60 @@ jobs:
           cat .github/actions/package-lock.json > package-lock.json
           npm ci
 
+      - name: Download artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: xlsx2rss-data
+          path: ${{ env.TEMP_FOLDER_DATA }}
+
       - name: Create approval markdown
         env:
           UPLOAD_FILE_NAME: ${{ fromJson(needs.set-up.outputs.commit-files)[0].name }}
           UPLOAD_FILE_URL: ${{ fromJson(needs.set-up.outputs.commit-files)[0].url.blob }}
           ARTIFACT_URL: ${{ needs.make-data-file.outputs.artifact-url }}
+          TEMP_FOLDER_DATA: ${{ env.TEMP_FOLDER_DATA }}
         run: |
           python create_template.py
 
       - name: Create approval issue
-        id: create_issue
+        id: create-issue
         uses: ./.github/actions/create-issue
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-title: "[Github Action] 파일 승인 요청"
           issue-body-url: ./templates/request_approve.tmp.md
 
-  
+      - name: Alert ISSUE
+        run: |
+          echo "----------------------------------------------------------"
+          echo "|                                                        |"
+          echo "| 이슈 생성: ${{ steps.create-issue.outputs.issue-url }}  |"
+          echo "|                                                        |"
+          echo "----------------------------------------------------------"
+          echo -e "\n\nWaiting..."
+
+      - name: Wait for issue closed
+        id: wait-issue
+        uses: ./.github/actions/wait-for-issue
+        with:
+          issue-number: ${{ steps.create-issue.outputs.issue-number }}
+          interval-wait-time: 2000
+          max-try: 60
+
+  approved:
+    needs: create-issue
+    runs-on: ubuntu-latest
+    if: contains(fromJson('["O", "o", "ok", "OK", "Ok", "oK"]'), needs.create-issue.outputs.issue-comment-body)
+    
+    steps:
+      - name: Test...
+        run: echo "approved"
+
+  denied:
+    needs: create-issue
+    runs-on: ubuntu-latest
+    if: ! contains(fromJson('["O", "o", "ok", "OK", "Ok", "oK"]'), needs.create-issue.outputs.issue-comment-body)
+
+    steps:
+      - name: Test...
+        run: echo "denied"
