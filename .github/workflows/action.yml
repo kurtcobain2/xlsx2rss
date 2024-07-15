@@ -48,12 +48,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           file-name: '*.xlsx'
 
-      - name: Test..
-        run: |
-          echo ${{ steps.commit-file.outputs.files }}
-          echo ----------------------------------------------
-          echo ${{ steps.commit-file.outputs.files[0].name }}
-
   
   make-data-file:
     needs: set-up
@@ -75,17 +69,10 @@ jobs:
       - name: Install Python Dependancies
         run: pip install -r requirements.txt
 
-      - name: Test..
-        env:
-          FILE_NAME: "${{ fromJson(needs.set-up.outputs.commit-files)[0].name }}"
-        run: |
-          echo "${{ needs.set-up.outputs.commit-files }}"
-          echo "${{ env.FILE_NAME }}"
-
       - name: Run make_data code
         env:
           PASS_KEY: "${{ secrets.PASS_KEY }}"
-          FILE_NAME: "${{ needs.set-up.outputs.commit-files[0].name }}"
+          FILE_NAME: "${{ fromJson(needs.set-up.outputs.commit-files)[0].name }}"
           OUTPUT_PATH: "/tmp/xlsx2rss-data"
           OUTPUT_PRENAME: "${{ env.FILE_NAME }}"
         run: |
@@ -106,8 +93,8 @@ jobs:
     steps:
       - name: Create approval markdown
         env:
-          UPLOAD_FILE_NAME: ${{ needs.set-up.outputs.commit-files[0].name }}
-          UPLOAD_FILE_URL: ${{ needs.set-up.outputs.commit-files[0].url.blob }}
+          UPLOAD_FILE_NAME: ${{ fromJson(needs.set-up.outputs.commit-files)[0].name }}
+          UPLOAD_FILE_URL: ${{ fromJson(needs.set-up.outputs.commit-files)[0].url.blob }}
           ARTIFACT_URL: ${{ needs.make-data-file.outputs.artifact-url }}
         run: |
           python create_template.py
