@@ -180,7 +180,7 @@ jobs:
   denied:
     needs: create-issue
     runs-on: ubuntu-latest
-    if: ! contains(fromJson('["O", "o", "ok", "OK", "Ok", "oK"]'), needs.create-issue.outputs.issue-comment-body)
+    if: ${{ ! contains(fromJson('["O", "o", "ok", "OK", "Ok", "oK"]'), needs.create-issue.outputs.issue-comment-body) }}
 
     steps:
       - name: Test...
