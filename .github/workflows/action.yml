@@ -11,6 +11,9 @@ permissions:
   issues: write
   contents: read
 
+env:
+  TEMP_FOLDER_DATA: xlsx2rss-data
+
 jobs:
   set-up:
     runs-on: ubuntu-latest
@@ -69,11 +72,14 @@ jobs:
       - name: Install Python Dependancies
         run: pip install -r requirements.txt
 
+      - name: Make temp folder
+        run: mkdir /tmp/$TEMP_FOLDER_DATA
+
       - name: Run make_data code
         env:
           PASS_KEY: "${{ secrets.PASS_KEY }}"
           FILE_NAME: "${{ fromJson(needs.set-up.outputs.commit-files)[0].name }}"
-          OUTPUT_PATH: "/tmp/xlsx2rss-data"
+          OUTPUT_PATH: "/tmp/$TEMP_FOLDER_DATA"
           OUTPUT_PRENAME: "${{ env.FILE_NAME }}"
         run: |
           echo run python with file: ${{ env.FILE_NAME }}
@@ -84,7 +90,7 @@ jobs:
         uses: actions/upload-artifact@v4.3.4
         with:
           name: xlsx2rss-data
-          path: /tmp/xlsx2rss-data
+          path: /tmp/$TEMP_FOLDER_DATA
       
   create-issue:
     needs: [set-up, make-data-file]
