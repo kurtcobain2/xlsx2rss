@@ -62,10 +62,13 @@ jobs:
       artifact-url: ${{ steps.artifact.outputs.artifact-url }}
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Run make_data code
         env:
           PASS_KEY: ${{ secrets.PASS_KEY }}
-          FILE_NAME: ${{ needs.set-up.outputs.commit-files }}
+          FILE_NAME: ${{ needs.set-up.outputs.commit-files[0].name }}
           OUTPUT_PATH: /tmp/xlsx2rss-data
           OUTPUT_PRE: ${{ env.FILE_NAME }}
         run: python make_data.py
