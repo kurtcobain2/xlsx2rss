@@ -72,7 +72,7 @@ jobs:
       - name: Run make_data code
         env:
           PASS_KEY: "${{ secrets.PASS_KEY }}"
-          FILE_NAME: "${{ fromJson(needs.set-up.outputs.commit-files)[0].name }}"
+          FILE_NAME: "${{ fromJson(needs.set-up.outputs.commit-files)[0].origin_name }}"
           OUTPUT_PATH: "/tmp/xlsx2rss-data"
           OUTPUT_PRENAME: "${{ env.FILE_NAME }}"
         run: |
@@ -93,7 +93,7 @@ jobs:
     steps:
       - name: Create approval markdown
         env:
-          UPLOAD_FILE_NAME: ${{ fromJson(needs.set-up.outputs.commit-files)[0].name }}
+          UPLOAD_FILE_NAME: ${{ fromJson(needs.set-up.outputs.commit-files)[0].origin_name }}
           UPLOAD_FILE_URL: ${{ fromJson(needs.set-up.outputs.commit-files)[0].url.blob }}
           ARTIFACT_URL: ${{ needs.make-data-file.outputs.artifact-url }}
         run: |
