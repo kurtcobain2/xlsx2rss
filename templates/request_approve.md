@@ -16,13 +16,11 @@
 <br>
 <details>
     <summary>오류 전부 보기</summary>
-```
 $#(ERR_CONTENT)
-```
 </details>
 
 
-#### sitemap.xml
+#### sitemap
 
 ---
 ### Google 검토

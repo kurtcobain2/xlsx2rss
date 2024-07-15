@@ -32,8 +32,8 @@ def run():
     os.environ['FAILED_COUNT'] = f'''{fail_json['cnt']}'''
     
     err_conts = []
-    for err in fail_json['detail']:
-        err_conts.append(f'''- 줄 번호: {err['row_idx']}\n- 오류 내용: {err['cause']}\n\n''')
+    for idx,err in enumerate(fail_json['detail']):
+        err_conts.append(f'''\n[*{idx+1}*] **줄 번호**: {err['row_idx']}\n\n**오류 내용**: {err['cause']}\n\n\n\n---''')
     os.environ['ERR_CONTENT'] = '\n'.join(err_conts)
 
 
