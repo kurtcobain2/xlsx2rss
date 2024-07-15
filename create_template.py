@@ -22,9 +22,9 @@ def replaceAllWithEnv():
 
 def run():
     # 저장되어있던 json load
-    with open(os.path.join(os.environ['TEMP_FOLDER_DATA'], f'{os.environ['UPLOAD_FILE_NAME']}_naver_rss_successed.json'), 'r', encoding='utf-8') as f:
+    with open(os.path.join(os.environ['TEMP_FOLDER_DATA'], f'''{os.environ['UPLOAD_FILE_NAME']}_naver_rss_successed.json'''), 'r', encoding='utf-8') as f:
         rss_items = json.load(f)
-    with open(os.path.join(os.environ['TEMP_FOLDER_DATA'], f'{os.environ['UPLOAD_FILE_NAME']}_naver_rss_failed.json'), 'r', encoding='utf-8') as f:
+    with open(os.path.join(os.environ['TEMP_FOLDER_DATA'], f'''{os.environ['UPLOAD_FILE_NAME']}_naver_rss_failed.json'''), 'r', encoding='utf-8') as f:
         fail_json = json.load(f)
 
     os.environ['RESULT_COUNT'] = len(rss_items)
