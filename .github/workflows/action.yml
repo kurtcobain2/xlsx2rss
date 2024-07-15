@@ -120,7 +120,7 @@ jobs:
   approved:
     needs: main
     runs-on: ubuntu-latest
-    if: contains(fromJson('["O", "o", "ok", "OK", "Ok", "oK"]'), needs.create-issue.outputs.issue-comment-body)
+    if: contains(fromJson('["O", "o", "ok", "OK", "Ok", "oK"]'), needs.main.outputs.issue-comment-body)
     
     steps:
       - name: Test...
@@ -129,7 +129,7 @@ jobs:
   denied:
     needs: main
     runs-on: ubuntu-latest
-    if: ${{ ! contains(fromJson('["O", "o", "ok", "OK", "Ok", "oK"]'), needs.create-issue.outputs.issue-comment-body) }}
+    if: ${{ ! contains(fromJson('["O", "o", "ok", "OK", "Ok", "oK"]'), needs.main.outputs.issue-comment-body) }}
 
     steps:
       - name: Test...
