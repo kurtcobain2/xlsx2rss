@@ -77,9 +77,9 @@ jobs:
 
       - name: Test..
         env:
-          FILE_NAME: "${{ needs.set-up.outputs.commit-files[0].name }}"
+          FILE_NAME: "${{ fromJson(needs.set-up.outputs.commit-files)[0].name }}"
         run: |
-          echo "${{ needs.set-up.outputs.commit-files[0].name }}"
+          echo "${{ needs.set-up.outputs.commit-files }}"
           echo "${{ env.FILE_NAME }}"
 
       - name: Run make_data code
