@@ -80,7 +80,6 @@ jobs:
           PASS_KEY: "${{ secrets.PASS_KEY }}"
           FILE_NAME: "${{ fromJson(needs.set-up.outputs.commit-files)[0].origin_name }}"
           TEMP_FOLDER_DATA: "${{ env.TEMP_FOLDER_DATA }}"
-          OUTPUT_PRENAME: "${{ env.FILE_NAME }}"
         run: |
           python make_data.py
           

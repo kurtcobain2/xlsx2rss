@@ -14,7 +14,6 @@ load_dotenv()
 FNAME = os.environ['FILE_NAME']
 PASS_KEY = os.environ['PASS_KEY']
 TEMP_FOLDER_DATA = os.environ['TEMP_FOLDER_DATA']
-OUTPUT_PRENAME = os.environ['OUTPUT_PRENAME']
 
 NOW = datetime.now()
 NOW_FORMAT_DATE = NOW.replace(tzinfo=NOW.astimezone().tzinfo).strftime('%a, %d %b %Y %H:%M:%S %z')
@@ -44,14 +43,14 @@ RSS_JSON = {
 xml_data = dicttoxml(RSS_JSON, custom_root='root', attr_type=False)
 xml_str = parseString(xml_data).toprettyxml()
 
-with open(os.path.join(TEMP_FOLDER_DATA, f'{OUTPUT_PRENAME}_naver_rss.xml'), 'w', encoding='utf-8') as f:
+with open(os.path.join(TEMP_FOLDER_DATA, f'{FNAME}_naver_rss.xml'), 'w', encoding='utf-8') as f:
     f.write(xml_str)
 
 
-with open(os.path.join(TEMP_FOLDER_DATA, f'{OUTPUT_PRENAME}_naver_rss_successed.json'), 'w', encoding='utf-8') as f:
+with open(os.path.join(TEMP_FOLDER_DATA, f'{FNAME}_naver_rss_successed.json'), 'w', encoding='utf-8') as f:
     json.dump(rss_items, f, ensure_ascii=False)
 
-with open(os.path.join(TEMP_FOLDER_DATA, f'{OUTPUT_PRENAME}_naver_rss_failed.json'), 'w', encoding='utf-8') as f:
+with open(os.path.join(TEMP_FOLDER_DATA, f'{FNAME}_naver_rss_failed.json'), 'w', encoding='utf-8') as f:
     fail_json = { 
         "cnt": len(rss_failed),
         "detail": []
