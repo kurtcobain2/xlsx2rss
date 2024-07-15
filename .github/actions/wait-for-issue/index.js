@@ -12,7 +12,7 @@ async function run() {
         const octokit = github.getOctokit(TOKEN);
         const ISSUE_NUM = core.getInput('issue-number');
         const INTERVAL_WAIT_TIME = parseInt(core.getInput('interval-wait-time')) || 1000;
-        const MAX_TRY = parseInt(core.getInput(core.getInput('max-try'))) || 1;
+        const MAX_TRY = parseInt(core.getInput('max-try')) || 1;
 
         let trycnt = 1;
         let success = false;
