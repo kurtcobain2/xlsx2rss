@@ -3,3 +3,4 @@ pandas
 openpyxl
 python-dateutil
 dicttoxml2
+msoffcrypto-tool
