@@ -24,8 +24,10 @@ async function run() {
                                 return undefined;
                         }
 
+                        let filename_splitted = v.filename.split("/");
                         return {
                             name: v.filename,
+                            origin_name: filename_splitted[filename_splitted.length-1],
                             status: v.status,
                             url: {
                                 blob: v.blob_url,
