@@ -33,7 +33,7 @@ async function run() {
                 break;
             }
             
-            await wait(INTERVAL_WAIT_TIME * trycnt);
+            await wait(INTERVAL_WAIT_TIME);
         }
 
         if (!success) {
