@@ -15,13 +15,14 @@ env:
   TEMP_FOLDER_DATA: /tmp/xlsx2rss-data
 
 jobs:
-  set-up:
+  main:
     runs-on: ubuntu-latest
     
     outputs:
       commit-files: ${{ steps.commit-file.outputs.files }}
       artifact-id: ${{ steps.artifact.outputs.artifact-id }}
       artifact-url: ${{ steps.artifact.outputs.artifact-url }}
+      issue-comment-body: ${{ steps.wait-issue.outputs.comment-body }}
 
     steps:
       - name: Checkout
@@ -79,57 +80,13 @@ jobs:
         with:
           name: xlsx2rss-data
           path: ${{ env.TEMP_FOLDER_DATA }}
-      
-  create-issue:
-    needs: set-up
-    runs-on: ubuntu-latest
-    outputs:
-      issue-comment-body: ${{ steps.wait-issue.outputs.comment-body }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v5.1.1
-        with:
-          python-version: '3.8'
-          cache: 'pip'
-
-      - name: Install Python Dependancies
-        run: pip install -r requirements.txt
-
-      - name: Use Node.js
-        uses: actions/setup-node@v4.0.3
-        with:
-          node-version: 16
-
-      - name: Cache node modules
-        uses: actions/cache@v4.0.2
-        id: cache
-        with:
-          path: node_modules
-          key: npm-packages-${{ hashFiles('.github/actions/package-lock.json') }}
-
-      - name: Install Node Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          cat .github/actions/package.json > package.json
-          cat .github/actions/package-lock.json > package-lock.json
-          npm ci
-
-      - name: Download artifact
-        uses: actions/download-artifact@v4.1.8
-        with:
-          name: xlsx2rss-data
-          path: ${{ env.TEMP_FOLDER_DATA }}
 
       - name: Create approval markdown
         env:
-          FILE_ORIGIN_NAME: ${{ fromJson(needs.set-up.outputs.commit-files)[0].name }}
-          UPLOAD_FILE_NAME: ${{ fromJson(needs.set-up.outputs.commit-files)[0].origin_name }}
-          UPLOAD_FILE_URL: ${{ fromJson(needs.set-up.outputs.commit-files)[0].url.blob }}
-          ARTIFACT_URL: ${{ needs.set-up.outputs.artifact-url }}
+          FILE_ORIGIN_NAME: ${{ fromJson(steps.commit-file.outputs.files)[0].name }}
+          UPLOAD_FILE_NAME: ${{ fromJson(steps.commit-file.outputs.files)[0].origin_name }}
+          UPLOAD_FILE_URL: ${{ fromJson(steps.commit-file.outputs.files)[0].url.blob }}
+          ARTIFACT_URL: ${{ steps.artifact.outputs.artifact-url }}
           TEMP_FOLDER_DATA: ${{ env.TEMP_FOLDER_DATA }}
         run: |
           python create_template.py
@@ -157,11 +114,11 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ steps.create-issue.outputs.issue-number }}
-          interval-wait-time: 2000
+          interval-wait-time: 3000
           max-try: 60
 
   approved:
-    needs: create-issue
+    needs: main
     runs-on: ubuntu-latest
     if: contains(fromJson('["O", "o", "ok", "OK", "Ok", "oK"]'), needs.create-issue.outputs.issue-comment-body)
     
@@ -170,7 +127,7 @@ jobs:
         run: echo "approved"
 
   denied:
-    needs: create-issue
+    needs: main
     runs-on: ubuntu-latest
     if: ${{ ! contains(fromJson('["O", "o", "ok", "OK", "Ok", "oK"]'), needs.create-issue.outputs.issue-comment-body) }}
 
