@@ -18,7 +18,7 @@ async function run() {
         let success = false;
 
         while (trycnt++ <= MAX_TRY) {
-            console.log(`try read issue (${trycnt})`);
+            core.info(`try read issue (${trycnt})`);
 
             const comments = await octokit.rest.issues.listComments({
                 owner: github.context.repo.owner,
@@ -33,7 +33,7 @@ async function run() {
                 break;
             }
             
-            await wait(INTERVAL_WAIT_TIME);
+            await wait(INTERVAL_WAIT_TIME * trycnt);
         }
 
         if (!success) {
