@@ -108,14 +108,6 @@ jobs:
       - name: Install Python Dependancies
         run: pip install -r requirements.txt
 
-      - name: Create approval markdown
-        env:
-          UPLOAD_FILE_NAME: ${{ fromJson(needs.set-up.outputs.commit-files)[0].name }}
-          UPLOAD_FILE_URL: ${{ fromJson(needs.set-up.outputs.commit-files)[0].url.blob }}
-          ARTIFACT_URL: ${{ needs.make-data-file.outputs.artifact-url }}
-        run: |
-          python create_template.py
-
       - name: Use Node.js
         uses: actions/setup-node@v4.0.3
         with:
@@ -135,12 +127,20 @@ jobs:
           cat .github/actions/package-lock.json > package-lock.json
           npm ci
 
+      - name: Create approval markdown
+        env:
+          UPLOAD_FILE_NAME: ${{ fromJson(needs.set-up.outputs.commit-files)[0].name }}
+          UPLOAD_FILE_URL: ${{ fromJson(needs.set-up.outputs.commit-files)[0].url.blob }}
+          ARTIFACT_URL: ${{ needs.make-data-file.outputs.artifact-url }}
+        run: |
+          python create_template.py
+
       - name: Create approval issue
         id: create_issue
         uses: ./.github/actions/create-issue
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-title: "[Github Action] 파일 승인 요청"
-          issue-body-url: ./templates/request_approve.md
+          issue-body-url: ./templates/request_approve.tmp.md
 
   
