@@ -75,12 +75,19 @@ jobs:
       - name: Install Python Dependancies
         run: pip install -r requirements.txt
 
+      - name: Test..
+        env:
+          FILE_NAME: "${{ needs.set-up.outputs.commit-files[0].name }}"
+        run: |
+          echo "${{ needs.set-up.outputs.commit-files[0].name }}"
+          echo "${{ env.FILE_NAME }}"
+
       - name: Run make_data code
         env:
-          PASS_KEY: ${{ secrets.PASS_KEY }}
-          FILE_NAME: ${{ needs.set-up.outputs.commit-files[0].name }}
-          OUTPUT_PATH: /tmp/xlsx2rss-data
-          OUTPUT_PRENAME: ${{ env.FILE_NAME }}
+          PASS_KEY: "${{ secrets.PASS_KEY }}"
+          FILE_NAME: "${{ needs.set-up.outputs.commit-files[0].name }}"
+          OUTPUT_PATH: "/tmp/xlsx2rss-data"
+          OUTPUT_PRENAME: "${{ env.FILE_NAME }}"
         run: |
           echo run python with file: ${{ env.FILE_NAME }}
           python make_data.py
