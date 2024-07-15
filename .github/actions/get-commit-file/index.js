@@ -1,3 +1,4 @@
+const path = require('path');
 const core = require('@actions/core');
 const github = require('@actions/github');
 
@@ -24,10 +25,10 @@ async function run() {
                                 return undefined;
                         }
 
-                        let filename_splitted = v.filename.split("/");
                         return {
                             name: v.filename,
-                            origin_name: filename_splitted[filename_splitted.length-1],
+                            base_name: path.basename(v.filename),
+                            origin_name: path.parse(path.basename(v.filename)).name,
                             status: v.status,
                             url: {
                                 blob: v.blob_url,

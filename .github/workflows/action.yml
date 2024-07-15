@@ -85,6 +85,7 @@ jobs:
           python make_data.py
           
       - name: Upload artifact
+        id: artifact
         uses: actions/upload-artifact@v4.3.4
         with:
           name: xlsx2rss-data

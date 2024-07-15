@@ -19,9 +19,10 @@ OUTPUT_PRENAME = os.environ['OUTPUT_PRENAME']
 NOW = datetime.now()
 NOW_FORMAT_DATE = NOW.replace(tzinfo=NOW.astimezone().tzinfo).strftime('%a, %d %b %Y %H:%M:%S %z')
 
+fname = f'files/{FNAME}.xlsx'
 
 # naver rss.xml
-df_data = utils.read_protected_excel(FNAME, PASS_KEY)
+df_data = utils.read_protected_excel(fname, PASS_KEY)
 rss_items, rss_failed = utils.make_rss_items_naver(df_data, NOW_FORMAT_DATE)
 
 RSS_JSON = {
