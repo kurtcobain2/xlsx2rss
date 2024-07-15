@@ -20,10 +20,21 @@ jobs:
     
     outputs:
       commit-files: ${{ steps.commit-file.outputs.files }}
+      artifact-id: ${{ steps.artifact.outputs.artifact-id }}
+      artifact-url: ${{ steps.artifact.outputs.artifact-url }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.1.1
+        with:
+          python-version: '3.8'
+          cache: 'pip'
+
+      - name: Install Python Dependancies
+        run: pip install -r requirements.txt
 
       - name: Use Node.js
         uses: actions/setup-node@v4.0.3
@@ -51,34 +62,13 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           file-name: '*.xlsx'
 
-  
-  make-data-file:
-    needs: set-up
-    runs-on: ubuntu-latest
-    outputs:
-      artifact-id: ${{ steps.artifact.outputs.artifact-id }}
-      artifact-url: ${{ steps.artifact.outputs.artifact-url }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v5.1.1
-        with:
-          python-version: '3.8'
-          cache: 'pip'
-
-      - name: Install Python Dependancies
-        run: pip install -r requirements.txt
-
       - name: Make temp folder
         run: mkdir ${{ env.TEMP_FOLDER_DATA }}
 
       - name: Run make_data code
         env:
           PASS_KEY: "${{ secrets.PASS_KEY }}"
-          FILE_NAME: "${{ fromJson(needs.set-up.outputs.commit-files)[0].origin_name }}"
+          FILE_NAME: "${{ fromJson(steps.commit-file.outputs.files)[0].origin_name }}"
           TEMP_FOLDER_DATA: "${{ env.TEMP_FOLDER_DATA }}"
         run: |
           python make_data.py
@@ -91,7 +81,7 @@ jobs:
           path: ${{ env.TEMP_FOLDER_DATA }}
       
   create-issue:
-    needs: [set-up, make-data-file]
+    needs: set-up
     runs-on: ubuntu-latest
     outputs:
       issue-comment-body: ${{ steps.wait-issue.outputs.comment-body }}
@@ -139,7 +129,7 @@ jobs:
           FILE_ORIGIN_NAME: ${{ fromJson(needs.set-up.outputs.commit-files)[0].name }}
           UPLOAD_FILE_NAME: ${{ fromJson(needs.set-up.outputs.commit-files)[0].origin_name }}
           UPLOAD_FILE_URL: ${{ fromJson(needs.set-up.outputs.commit-files)[0].url.blob }}
-          ARTIFACT_URL: ${{ needs.make-data-file.outputs.artifact-url }}
+          ARTIFACT_URL: ${{ needs.set-up.outputs.artifact-url }}
           TEMP_FOLDER_DATA: ${{ env.TEMP_FOLDER_DATA }}
         run: |
           python create_template.py
