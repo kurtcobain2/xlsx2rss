@@ -107,7 +107,7 @@ jobs:
 
       - name: Install Python Dependancies
         run: pip install -r requirements.txt
-        
+
       - name: Create approval markdown
         env:
           UPLOAD_FILE_NAME: ${{ fromJson(needs.set-up.outputs.commit-files)[0].name }}
@@ -115,6 +115,25 @@ jobs:
           ARTIFACT_URL: ${{ needs.make-data-file.outputs.artifact-url }}
         run: |
           python create_template.py
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4.0.3
+        with:
+          node-version: 16
+
+      - name: Cache node modules
+        uses: actions/cache@v4.0.2
+        id: cache
+        with:
+          path: node_modules
+          key: npm-packages-${{ hashFiles('.github/actions/package-lock.json') }}
+
+      - name: Install Node Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          cat .github/actions/package.json > package.json
+          cat .github/actions/package-lock.json > package-lock.json
+          npm ci
 
       - name: Create approval issue
         id: create_issue
