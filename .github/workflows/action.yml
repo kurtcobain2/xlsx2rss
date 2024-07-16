@@ -117,11 +117,12 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ steps.create-issue.outputs.issue-number }}
           interval-wait-time: 3000
-          max-try: 60
+          max-try: 600
 
   approved:
     needs: main
     runs-on: ubuntu-latest
+    continue-on-error: false
     if: contains(fromJson('["O", "o", "ok", "OK", "Ok", "oK"]'), needs.main.outputs.issue-comment-body)
     
     steps:
@@ -146,6 +147,12 @@ jobs:
           cat ./.github/actions/package.json > package.json
           cat ./.github/actions/package-lock.json > package-lock.json
           npm ci
+          
+      - name: Download artifact
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: xlsx2rss-data
+          path: ${{ env.TEMP_FOLDER_DATA }}
 
       - name: Add issue comment
         uses: ./.github/actions/add-issue-comment
@@ -153,14 +160,53 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           comment: "승인되었습니다"
           issue-number: ${{ needs.main.outputs.issue-number }}
-          state: closed
-          state-reason: completed
+          # state: closed
+          # state-reason: completed
+
+      - name: Upload Server
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KNOWN_HOST }}" > ~/.ssh/known_hosts
+          chmod -r 600 ~/.ssh
+
+          scp -r ${{ env.TEMP_FOLDER_DATA }}/* ${{ secrets.SSH_HOST }}@${{ secrets.SSH_IP }}:${{ secrets.SERV_PATH }}
+          rm -rf ~/.ssh
+        
 
   denied:
     needs: main
     runs-on: ubuntu-latest
+    continue-on-error: true
     if: ${{ ! contains(fromJson('["O", "o", "ok", "OK", "Ok", "oK"]'), needs.main.outputs.issue-comment-body) }}
 
     steps:
-      - name: Test...
-        run: echo "denied"
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4.0.3
+        with:
+          node-version: 16
+
+      - name: Cache node modules
+        uses: actions/cache@v4.0.2
+        id: cache
+        with:
+          path: node_modules
+          key: npm-packages-${{ hashFiles('./.github/actions/package-lock.json') }}
+
+      - name: Install Node Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          cat ./.github/actions/package.json > package.json
+          cat ./.github/actions/package-lock.json > package-lock.json
+          npm ci
+          
+      - name: Add issue comment
+        uses: ./.github/actions/add-issue-comment
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          comment: "승인 거부되었습니다"
+          issue-number: ${{ needs.main.outputs.issue-number }}
+          state: closed
+          state-reason: not_planned
