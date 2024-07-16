@@ -22,6 +22,7 @@ jobs:
       commit-files: ${{ steps.commit-file.outputs.files }}
       artifact-id: ${{ steps.artifact.outputs.artifact-id }}
       artifact-url: ${{ steps.artifact.outputs.artifact-url }}
+      issue-number: ${{ steps.create-issue.outputs.issue-number }}
       issue-comment-body: ${{ steps.wait-issue.outputs.comment-body }}
 
     steps:
@@ -47,18 +48,18 @@ jobs:
         id: cache
         with:
           path: node_modules
-          key: npm-packages-${{ hashFiles('.github/actions/package-lock.json') }}
+          key: npm-packages-${{ hashFiles('./actions/package-lock.json') }}
 
       - name: Install Node Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          cat .github/actions/package.json > package.json
-          cat .github/actions/package-lock.json > package-lock.json
+          cat ./actions/package.json > package.json
+          cat ./actions/package-lock.json > package-lock.json
           npm ci
 
       - name: Get Commit File
         id: commit-file
-        uses: ./.github/actions/get-commit-file
+        uses: ./actions/get-commit-file
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           file-name: '*.xlsx'
@@ -93,11 +94,12 @@ jobs:
 
       - name: Create approval issue
         id: create-issue
-        uses: ./.github/actions/create-issue
+        uses: ./actions/create-issue
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-title: "[Github Action] 파일 승인 요청"
           issue-body-url: ./templates/request_approve.tmp.md
+          label: 승인요청
 
       - name: Alert ISSUE
         run: |
@@ -110,7 +112,7 @@ jobs:
 
       - name: Wait for issue closed
         id: wait-issue
-        uses: ./.github/actions/wait-for-issue
+        uses: ./actions/wait-for-issue
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ steps.create-issue.outputs.issue-number }}
@@ -123,6 +125,15 @@ jobs:
     if: contains(fromJson('["O", "o", "ok", "OK", "Ok", "oK"]'), needs.main.outputs.issue-comment-body)
     
     steps:
+      - name: Add issue comment
+        uses: ./actions/add-issue-comment
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          comment: "승인되었습니다."
+          issue-number: ${{ needs.main.outputs.issue-number }}
+          state: closed
+          state-reason: completed
+
       - name: Test...
         run: echo "approved"
 
