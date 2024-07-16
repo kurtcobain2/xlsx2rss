@@ -167,7 +167,7 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_KNOWN_HOST }}" > ~/.ssh/known_hosts
-          chmod -r 600 ~/.ssh
+          # chmod -r 600 ~/.ssh
 
           scp -r ${{ env.TEMP_FOLDER_DATA }}/* ${{ secrets.SSH_HOST }}@${{ secrets.SSH_IP }}:${{ secrets.SERV_PATH }}
           rm -rf ~/.ssh
