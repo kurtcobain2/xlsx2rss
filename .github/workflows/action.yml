@@ -48,18 +48,18 @@ jobs:
         id: cache
         with:
           path: node_modules
-          key: npm-packages-${{ hashFiles('./actions/package-lock.json') }}
+          key: npm-packages-${{ hashFiles('./.github/actions/package-lock.json') }}
 
       - name: Install Node Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          cat ./actions/package.json > package.json
-          cat ./actions/package-lock.json > package-lock.json
+          cat ./.github/actions/package.json > package.json
+          cat ./.github/actions/package-lock.json > package-lock.json
           npm ci
 
       - name: Get Commit File
         id: commit-file
-        uses: ./actions/get-commit-file
+        uses: ./.github/actions/get-commit-file
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           file-name: '*.xlsx'
@@ -94,7 +94,7 @@ jobs:
 
       - name: Create approval issue
         id: create-issue
-        uses: ./actions/create-issue
+        uses: ./.github/actions/create-issue
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-title: "[Github Action] 파일 승인 요청"
@@ -112,7 +112,7 @@ jobs:
 
       - name: Wait for issue closed
         id: wait-issue
-        uses: ./actions/wait-for-issue
+        uses: ./.github/actions/wait-for-issue
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ steps.create-issue.outputs.issue-number }}
@@ -126,7 +126,7 @@ jobs:
     
     steps:
       - name: Add issue comment
-        uses: ./actions/add-issue-comment
+        uses: ./.github/actions/add-issue-comment
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           comment: "승인되었습니다."
