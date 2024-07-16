@@ -129,13 +129,10 @@ jobs:
         uses: ./.github/actions/add-issue-comment
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          comment: "승인되었습니다."
+          comment: "승인되었습니다"
           issue-number: ${{ needs.main.outputs.issue-number }}
           state: closed
           state-reason: completed
-
-      - name: Test...
-        run: echo "approved"
 
   denied:
     needs: main
